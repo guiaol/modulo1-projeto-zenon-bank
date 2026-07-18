@@ -20,3 +20,4 @@ Siga o passo a passo do quadro de atividades (Trello) do projeto prático dessa 
 * **Java JDK**: 25 (LTS).
 * **IDE**: IntelliJ IDEA ou Eclipse.
 * **Docker e Docker Compose**: Para a tarefa de Banco de Dados.
+
