@@ -1,9 +1,11 @@
 package br.com.zenon;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.List;
 
 public class Main {
-    void main() {
+    void main() throws IOException {
 
         Transaction t1 = new Transaction(1, TransactionType.PAYMENT, new BigDecimal("9838.64"),
                 new TransactionCustomer("C1231006815", new BigDecimal("170136.0"), new BigDecimal("160296.36")),
@@ -21,6 +23,12 @@ public class Main {
         IO.println(t1);
         IO.println(t2);
 
+        TransactionIngestor ti = new TransactionIngestor("data/PS_20174392719_1491204439457_log.csv");
 
+        List<Transaction> tl = ti.ingestaoDados();
+
+
+        tl.forEach(IO::println);
+        IO.println(tl.size());
     }
 }

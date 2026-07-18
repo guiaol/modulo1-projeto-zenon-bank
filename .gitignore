@@ -68,3 +68,17 @@ build/
 
 data/
 
+# Gradle cache and status files
+.gradle/
+*.gradletasknamecache
+
+# Build outputs
+build/
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Avoid ignoring the Gradle Wrapper files (Keep these tracked)
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
