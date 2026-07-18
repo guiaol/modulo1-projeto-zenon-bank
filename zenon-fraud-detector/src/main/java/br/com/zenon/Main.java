@@ -23,12 +23,27 @@ public class Main {
         IO.println(t1);
         IO.println(t2);
 
+        IO.println("professor versao java.nio --------------------------------------------------------------------------------");
+
+        var transactionIngesterNIO = new TransactionIngestor();
+        List<Transaction> transactionsNIO = transactionIngesterNIO.readNIO("data/PS_20174392719_1491204439457_log.csv");
+        IO.println(transactionsNIO.size());
+
+        transactionsNIO.stream().limit(10).forEach(IO::println);
+
+        IO.println("professor versao java.io --------------------------------------------------------------------------------");
+
+        var transactionIngesterIO = new TransactionIngestor();
+        List<Transaction> transactionsIO = transactionIngesterIO.readIO("data/PS_20174392719_1491204439457_log.csv");
+        IO.println(transactionsIO.size());
+
+        transactionsIO.stream().limit(10).forEach(IO::println);
+
+        IO.println("pessoal versao java.io --------------------------------------------------------------------------------");
+
         TransactionIngestor ti = new TransactionIngestor("data/PS_20174392719_1491204439457_log.csv");
-
-        List<Transaction> tl = ti.ingestaoDados();
-
-
-        tl.forEach(IO::println);
+        List<Transaction> tl = ti.readDates();
         IO.println(tl.size());
+        tl.stream().limit(10).forEach(IO::println);
     }
 }
