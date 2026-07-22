@@ -45,5 +45,17 @@ public class Main {
         List<Transaction> tl = ti.readDates();
         IO.println(tl.size());
         tl.stream().limit(10).forEach(IO::println);
+
+        IO.println("tarefa 04 pessoal --------------------------------------------------------------------------------");
+ //       TransactionIngestor ti2 = new TransactionIngestor("data/paysim_with_bad_data.csv");
+ //       List<Transaction> tl2 = ti2.readDates();
+
+ //       tl2.stream().limit(10).forEach(IO::println);
+
+        IO.println("tarefa 04 professor --------------------------------------------------------------------------------");
+        List<Transaction> transactionsBadData = transactionIngesterNIO.readNIO("data/paysim_with_bad_data.csv");
+        IO.println(transactionsBadData.size());
+
+        transactionsBadData.forEach(IO::println);
     }
 }

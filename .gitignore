@@ -68,17 +68,24 @@ build/
 
 data/
 
-# Gradle cache and status files
+### Gradle ###
+
+# Cache do Gradle (raiz e submódulos)
 .gradle/
+**/.gradle/
+
+# Diretórios de build
+build/
+**/build/
+
+# Cache
 *.gradletasknamecache
 
-# Build outputs
-build/
-
-# Ignore Gradle GUI config
+# Configuração local do Gradle
 gradle-app.setting
 
-# Avoid ignoring the Gradle Wrapper files (Keep these tracked)
-!gradle-wrapper.jar
+# Manter o Gradle Wrapper versionado
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 !gradle-wrapper.properties
 

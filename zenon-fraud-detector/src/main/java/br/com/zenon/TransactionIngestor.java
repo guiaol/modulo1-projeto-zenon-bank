@@ -9,9 +9,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class TransactionIngestor {
 
@@ -29,7 +27,13 @@ public class TransactionIngestor {
         Path path = Path.of(fileName);
         try {
             List<String> lines = Files.readAllLines(path);
-            return lines.stream().skip(1).limit(1000).map(this::parseTransaction).toList();
+            return lines.stream()
+                    .skip(1)
+                    .limit(1000)
+                    .map(this::parseTransaction)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .toList();
 
         } catch (Exception ex) {
             throw new RuntimeException("Erro ao ler o arquivo: " + fileName, ex);
@@ -57,7 +61,7 @@ public class TransactionIngestor {
                     break;
                 }
 
-                Transaction t = parseTransaction(line);
+                Transaction t = parseTransaction(line).get();
                 transacations.add(t);
             }
 
@@ -68,20 +72,28 @@ public class TransactionIngestor {
         return transacations;
     }
 
-    @NotNull
-    private Transaction parseTransaction(String line) {
-        String[] chuncks = line.split(",");
-        int step  = Integer.parseInt(chuncks[0]);
-        TransactionType transactionType = TransactionType.valueOf(chuncks[1]);
-        BigDecimal amount = new BigDecimal(chuncks[2]);
-        var origin = new TransactionCustomer(chuncks[3], new BigDecimal(chuncks[4]),new BigDecimal(chuncks[5]));
-        var recipient = new TransactionCustomer(chuncks[6], new BigDecimal(chuncks[7]),new BigDecimal(chuncks[8]));
-        boolean isFraud = chuncks[9].equals("1");
-        boolean isFlaggedFraud = chuncks[10].equals("1");
+    private Optional<Transaction> parseTransaction(String line) {
+        try {
+            String[] chuncks = line.split(",");
+            int step = Integer.parseInt(chuncks[0]);
+            TransactionType transactionType = TransactionType.valueOf(chuncks[1]);
 
-        return new Transaction(step, transactionType, amount, origin, recipient, isFraud, isFlaggedFraud);
+            if (chuncks[2] == null || chuncks[2].trim().isEmpty()) throw new IllegalArgumentException("O valor de amount não pode ser nulo nem vazio.");
+            BigDecimal amount = new BigDecimal(chuncks[2]);
+
+            var origin = new TransactionCustomer(chuncks[3], new BigDecimal(chuncks[4]), new BigDecimal(chuncks[5]));
+            var recipient = new TransactionCustomer(chuncks[6], new BigDecimal(chuncks[7]), new BigDecimal(chuncks[8]));
+            boolean isFraud = chuncks[9].equals("1");
+            boolean isFlaggedFraud = chuncks[10].equals("1");
+
+            return Optional.of(new Transaction(step, transactionType, amount, origin, recipient, isFraud, isFlaggedFraud));
+        } catch(Exception e) {
+            System.out.println("Erro ao fazer parse " + line + " | " + e);
+//            e.printStackTrace();
+        }
+
+        return Optional.empty();
     }
-
 
     // --------------------------------  solucao pessoal
     public List<Transaction> readDates() throws IOException {
@@ -98,10 +110,9 @@ public class TransactionIngestor {
                 String line = linesFile[i];
                 String[] lineSplit = line.split(",");
 
-
                 int step  = Integer.parseInt(lineSplit[0]);
 
-                TransactionType transactionType = TransactionType.valueOf(lineSplit[1]);
+//                TransactionType transactionType = TransactionType.valueOf(lineSplit[1]);
 
                 BigDecimal amount = new BigDecimal(lineSplit[2]);
 
@@ -113,9 +124,13 @@ public class TransactionIngestor {
 
                 boolean isFlaggedFraud = lineSplit[10].equals("1");
 
-                Transaction t = new Transaction(step, transactionType, amount, origin, recipient, isFraud, isFlaggedFraud);
+                try {
+                    Transaction t = new Transaction(step, TransactionType.valueOf(lineSplit[1]), amount, origin, recipient, isFraud, isFlaggedFraud);
 
-                transactionList.add(t);
+                    transactionList.add(t);
+                } catch (Exception e) {
+                    IO.println("Erro: " + line + " | " + e.getCause() + " : " +  e.getMessage());
+                }
             }
 
         }
