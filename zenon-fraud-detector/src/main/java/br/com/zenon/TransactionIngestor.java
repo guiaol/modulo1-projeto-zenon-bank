@@ -14,6 +14,7 @@ import java.util.*;
 public class TransactionIngestor {
 
     private String fileName;
+    public static final int MAX_SIZE = 50_000;
 
     public TransactionIngestor(String fileName) {
         this.fileName = fileName;
@@ -29,7 +30,7 @@ public class TransactionIngestor {
             List<String> lines = Files.readAllLines(path);
             return lines.stream()
                     .skip(1)
-                    .limit(1000)
+                    .limit(MAX_SIZE)
                     .map(this::parseTransaction)
                     .filter(Optional::isPresent)
                     .map(Optional::get)

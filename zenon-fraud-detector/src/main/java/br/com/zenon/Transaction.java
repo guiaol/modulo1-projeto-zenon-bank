@@ -21,15 +21,7 @@ public record Transaction(int step,
 
         if (step <= 0) throw new IllegalArgumentException("O valor de step deve ser positivo: " + step);
         if (amount.signum() < 0) throw new IllegalArgumentException("O valor de amount deve ser positivo ou zero: " + amount);
-
-
     }
-
-
-
-
-
-
 
 //    public Transaction(int step,
 //                       TransactionType transactionType,
