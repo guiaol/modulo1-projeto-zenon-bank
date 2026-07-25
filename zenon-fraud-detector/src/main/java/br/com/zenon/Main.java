@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class Main {
     void main() throws IOException {
@@ -59,11 +60,11 @@ public class Main {
 
         transactionsBadData.forEach(IO::println);
 
-        IO.println("tarefa 05 pessoal --------------------------------------------------------------------------------");
-        List<Transaction> transactions = transactionIngesterNIO.readNIO("data/PS_20174392719_1491204439457_log.csv");
-        IO.println(transactions.size());
+        IO.println("tarefa 05 professor --------------------------------------------------------------------------------");
+        List<Transaction> transactions05 = transactionIngesterNIO.readNIO("data/PS_20174392719_1491204439457_log.csv");
+        IO.println(transactions05.size());
 
-        var fraudAnalyzer = new FraudAnalyzer(transactions);
+        var fraudAnalyzer = new FraudAnalyzer(transactions05);
 
         // Apenas transações onde isFraud == true, imprima o tamanho da lista.
         long fraudCount = fraudAnalyzer.countFrauds();
@@ -90,5 +91,53 @@ public class Main {
         Map<TransactionType, Long> fraudCountByTypeTransaction = fraudAnalyzer.countFraudsByTypeTransaction();
         IO.println("Fraudes por tipo: ");
         fraudCountByTypeTransaction.forEach((type, count) -> IO.println("- %s: %d".formatted(type, count)));
+
+        IO.println("tarefa 06 pessoal --------------------------------------------------------------------------------");
+//        List<Transaction> transactions = transactionIngesterNIO.readNIO("data/PS_20174392719_1491204439457_log.csv");
+//        IO.println("tarefa 06 transaction " + transactions.size());
+
+//        TransactionRepository tlr = new TransactionListRepository(transactions);
+//        String name = "C1868032458";
+//
+//        long start = System.nanoTime();
+//        Optional<Transaction> trancation = tlr.findByOriginName(name);
+//        long finished = System.nanoTime();
+//        IO.println("Tempo para List " + ((finished - start)/1_000_000.0) + " s");
+//
+//        TransactionRepository tmr = new TransactionMapRepository(transactions);
+//        name = "C1868032458";
+//        start = System.nanoTime();
+//        trancation = tlr.findByOriginName(name);
+//        finished = System.nanoTime();
+//        IO.println("Tempo para Map " + ((finished - start)/1_000_000.0) + " s");
+//
+//        if(trancation.isPresent()) {
+//           IO.println(trancation.get());
+//        } else {
+//            IO.println("Transação não encontrada para o cliente " + name);
+//        }
+
+        IO.println("tarefa 06 professor --------------------------------------------------------------------------------");
+        List<Transaction> transactions = transactionIngesterNIO.readNIO("data/PS_20174392719_1491204439457_log.csv");
+//        IO.println("tarefa 06 transaction " + transactions.size());
+        TransactionRepository tlrP = new TransactionListRepository(transactions);
+        String nameP = "C1868032458";
+
+        long startP = System.nanoTime();
+        tlrP
+            .findByOriginName(nameP)
+            .ifPresentOrElse(IO::println, () -> IO.println("Transação não encontrada para o cliente" + nameP));
+        long finishedP = System.nanoTime();
+        IO.println("Tempo de busca para List (ms) " + ((finishedP - startP)/1000000.0) + " s");
+
+        tlrP = new TransactionMapRepository(transactions);
+        String namePMap = "C1868032458";
+
+        startP = System.nanoTime();
+        tlrP
+                .findByOriginName(nameP)
+                .ifPresentOrElse(IO::println, () -> IO.println("Transação não encontrada para o cliente" + namePMap));
+        finishedP = System.nanoTime();
+        IO.println("Tempo de busca para Map (ms) " + ((finishedP - startP)/1000000.0) + " s");
     }
 }
