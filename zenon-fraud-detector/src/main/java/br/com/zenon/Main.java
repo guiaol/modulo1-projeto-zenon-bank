@@ -144,5 +144,16 @@ public class Main {
                 .ifPresentOrElse(IO::println, () -> IO.println("Transação não encontrada para o cliente" + namePMap));
         finishedP = System.nanoTime();
         IO.println("Tempo de busca para Map (ms) " + ((finishedP - startP)/1000000.0) + " s");
+
+        IO.println("tarefa 07 pessoal --------------------------------------------------------------------------------");
+//        String nameFile = "data/PS_20174392719_1491204439457_log.csv";
+//        TransactionReport tr = new TransactionReport(nameFile);
+//        tr.obterTotalLinas();
+//        tr.obterTotalFraudes();
+//        tr.obterTotalTransacionado();
+
+        IO.println("tarefa 07 professor --------------------------------------------------------------------------------");
+
+
     }
 }

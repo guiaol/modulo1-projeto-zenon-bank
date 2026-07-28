@@ -1,7 +1,5 @@
 package br.com.zenon;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,14 +47,12 @@ public class FraudAnalyzer {
                 .collect(Collectors.groupingBy(Transaction::transactionType, Collectors.counting()));
     }
 
-    @NotNull
     private Stream<Transaction> fraudStream() {
         return transactions
                 .stream()
                 .filter(Transaction::isFraud);
     }
 
-    @NotNull
     private Stream<Transaction> highValueFraudStream() {
         return fraudStream()
                 .sorted(Comparator.comparing(Transaction::amount).reversed());
