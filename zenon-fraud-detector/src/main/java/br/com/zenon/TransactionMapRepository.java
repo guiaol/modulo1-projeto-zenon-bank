@@ -19,7 +19,8 @@ public class TransactionMapRepository implements TransactionRepository {
                                 // key
                                 transaction -> transaction.origin().name(),
                                 // value
-                                Function.identity() // mesma coisa que transaction -> transaction, pega uma coisa e retorna a mesma coisa.
+                                Function.identity(), // mesma coisa que transaction -> transaction, pega uma coisa e retorna a mesma coisa.
+                                (existente, novo) -> novo
                         )
                 );
     }
