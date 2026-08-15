@@ -30,6 +30,11 @@ public class TransactionMapRepository implements TransactionRepository {
         return Optional.ofNullable(transactionByOriginName.get(name));
     }
 
+    @Override
+    public void save(Transaction transaction) {
+        this.transactionByOriginName.putIfAbsent(transaction.origin().name(), transaction);
+    }
+
 
     // tarefa 06 pessoal --------------------------------------------------------------------------------
 //    Map<Long, Transaction> transactions = new HashMap<>();

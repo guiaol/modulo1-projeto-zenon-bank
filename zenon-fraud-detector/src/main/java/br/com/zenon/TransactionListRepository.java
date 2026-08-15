@@ -22,9 +22,13 @@ public class TransactionListRepository implements TransactionRepository {
                 .findFirst();
     }
 
+    @Override
+    public void save(Transaction transaction) {
+        this.transactions.add(transaction);
+    }
 
 
-     // tarefa 06 pessoal --------------------------------------------------------------------------------
+    // tarefa 06 pessoal --------------------------------------------------------------------------------
 //    List<Transaction> transactions;
 //
 //    public TransactionListRepository(List<Transaction> transactions) {
