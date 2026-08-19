@@ -40,7 +40,6 @@ public class EfficientTransactionIngestor {
                      .skip(1)
 //                     .limit(MAX_SIZE_10k)
         ){
-
             var iterator = lines.iterator();
 
             List<String> lineBatch = new ArrayList<>(LINE_BATCH_SIZE);
