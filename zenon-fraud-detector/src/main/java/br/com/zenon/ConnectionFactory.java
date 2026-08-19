@@ -12,7 +12,7 @@ public class ConnectionFactory {
     public static Connection getConnection() {
         try {
             return DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/zenon_frauds",
+                    "jdbc:mysql://localhost:3306/zenon_frauds?rewriteBatchedStatements=true",
                     "root",
                     "senha123"
             );

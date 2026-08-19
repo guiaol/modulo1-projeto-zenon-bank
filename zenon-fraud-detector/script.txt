@@ -29,4 +29,8 @@ commit;
 
 select * from transactions t
 
-47123.75738 s tempo para inserir 10 k
+47123.757380 s tempo para inserir 10 k
+11360.109243 s tempo para inserir 10 k
+2656.6267650 s tempo para inserir 10 k com batch jdbc
+1518.4497300 s tempo para inserir 10 k com batch jdbc rewriteBatchedStatements=true
+633.17988900 s sem medir a ingestao

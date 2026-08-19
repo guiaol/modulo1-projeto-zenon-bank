@@ -5,9 +5,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 
 public class TransactionSQLRepositoy implements TransactionRepository {
+
+    private static final Integer JDBC_BATCH_SIZE = 1_000;
 
     @Override
     public Optional<Transaction> findByOriginName(String originName) {
@@ -22,12 +25,12 @@ public class TransactionSQLRepositoy implements TransactionRepository {
                 LIMIT 1                
                 """;
 
-        try(Connection conn = ConnectionFactory.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, originName);
 
-            try(ResultSet rs = ps.executeQuery();) {
+            try (ResultSet rs = ps.executeQuery();) {
                 if (rs.next()) {
                     Transaction transaction = mapResultSetToTransaction(rs);
                     return Optional.of(transaction);
@@ -50,8 +53,8 @@ public class TransactionSQLRepositoy implements TransactionRepository {
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
-        try(Connection conn = ConnectionFactory.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, transaction.step());
             ps.setString(2, transaction.transactionType().name());
@@ -96,8 +99,70 @@ public class TransactionSQLRepositoy implements TransactionRepository {
             boolean isFlaggedFraud = rs.getBoolean("is_flagged_fraud");
 
             return new Transaction(step, type, amount, origin, recipient, isFraud, isFlaggedFraud);
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void saveAll(List<Transaction> transactions) {
+        String sql = """
+                INSERT INTO transactions
+                (step, `type`, amount, name_origin, old_balance_origin, new_balance_origin, name_recipient, old_balance_recipient, new_balance_recipient, is_fraud, is_flagged_fraud)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+
+        try (Connection conn = ConnectionFactory.getConnection();) {
+
+            conn.setAutoCommit(false);
+
+            int count = 0;
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                for (Transaction transaction : transactions) {
+
+                    ps.setInt(1, transaction.step());
+                    ps.setString(2, transaction.transactionType().name());
+                    ps.setBigDecimal(3, transaction.amount());
+
+                    ps.setString(4, transaction.origin().name());
+                    ps.setBigDecimal(5, transaction.origin().oldBalance());
+                    ps.setBigDecimal(6, transaction.origin().newBalance());
+
+                    ps.setString(7, transaction.recipient().name());
+                    ps.setBigDecimal(8, transaction.recipient().oldBalance());
+                    ps.setBigDecimal(9, transaction.recipient().newBalance());
+
+                    ps.setBoolean(10, transaction.isFraud());
+                    ps.setBoolean(11, transaction.isFlaggedFraud());
+
+                    ps.addBatch(); // nao manda pro banco, acumula um lote
+                    count++;
+
+                    if (count % JDBC_BATCH_SIZE == 0) {
+                        IO.println("Executando bach JDBC... ");
+
+                        ps.executeBatch();
+                        conn.commit();
+                    }
+                }
+
+                IO.println("Executando bach final JDBC... ");
+
+                ps.executeBatch();
+                conn.commit();
+                conn.setAutoCommit(true);
+
+            } catch (SQLException e) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    throw new RuntimeException("Erro ao executar rollback", ex);
+                }
+                throw new RuntimeException("Erro ao salvar nova transação ", e);
+            }
+
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro na coneção com o BD!", e);
         }
     }
 }
