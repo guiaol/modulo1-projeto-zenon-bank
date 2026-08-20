@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -24,6 +25,8 @@ public class EfficientTransactionIngestor {
     public static final int MAX_SIZE_10k = 10_000;
     public static final int LINE_BATCH_SIZE = 2_500;
 
+    private final Semaphore dbPermits = new Semaphore(10);
+
     public EfficientTransactionIngestor(String fileName) {
         this.fileName = fileName;
     }
@@ -34,7 +37,7 @@ public class EfficientTransactionIngestor {
     public void readNIOAsBatch(String fileName, Consumer<List<Transaction>> batchConsumer) {
         Path path = Path.of(fileName);
 
-        try (ExecutorService executor = Executors.newFixedThreadPool(10);
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // 1 virtual thread por task
              Stream<String> lines = Files
                      .lines(path)
                      .skip(1)
@@ -45,14 +48,20 @@ public class EfficientTransactionIngestor {
 
             List<String> lineBatch = new ArrayList<>(LINE_BATCH_SIZE);
             while(iterator.hasNext()) {
-
                 String line = iterator.next();
                 lineBatch.add(line);
 
                 if (lineBatch.size() >= LINE_BATCH_SIZE) {
                     IO.println("Executando batch ingestor...");
                     List<String> currentLineBatch = List.copyOf(lineBatch); // faz uma copia para uma variavel imutavel
-                    executor.submit(() -> executeBatch(currentLineBatch, batchConsumer));
+                    executor.submit(() -> {
+                        try {
+                            executeBatch(currentLineBatch, batchConsumer);
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+
                     lineBatch.clear();
                 }
             }
@@ -60,7 +69,13 @@ public class EfficientTransactionIngestor {
             if (!lineBatch.isEmpty()) {
                 IO.println("Executando batch final ingestor...");
                 List<String> currentLineBatch = List.copyOf(lineBatch); // faz uma copia para uma variavel imutavel
-                executor.submit(() -> executeBatch(currentLineBatch, batchConsumer));
+                executor.submit(() -> {
+                    try {
+                        executeBatch(currentLineBatch, batchConsumer);
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                });
             }
 
         } catch (Exception ex) {
@@ -75,7 +90,21 @@ public class EfficientTransactionIngestor {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        batchConsumer.accept(transactionBatch);
+
+        try {
+            // limita a concorrencia das virtual thread para nao estourar usuario de banco
+            dbPermits.acquire();
+
+            try {
+                batchConsumer.accept(transactionBatch);
+            } finally {
+                dbPermits.release();
+            }
+
+        } catch (InterruptedException e) {
+            // quando tem InterruptedException, o certo é Thread.interrupt()
+            Thread.currentThread().interrupt();
+        }
     }
 
     // -------------------------------- solucao professor java.nio2
